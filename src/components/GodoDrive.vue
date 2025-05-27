@@ -8,15 +8,15 @@
             <div>
                 <div class="l2">
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <router-link to="/home" style="color: #324247;">Home</router-link>
-                    <router-link :to="`/drive?session=${sessionId}`" style="color: #F4A261;">Drive</router-link>
+                  <router-link :to="`/home?session=${sessionId}`" style="color: #324247;">Home</router-link>
+                  <router-link :to="`/drive?session=${sessionId}`" style="color: #F4A261;">Drive</router-link>
                     <router-link :to="`/ride?session=${sessionId}`" style="color: #324247;">Ride</router-link>
                     <router-link :to="`/delivery?session=${sessionId}`" style="color: #324247;">Delivery</router-link>
                   </div>
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <a>About</a>
-                    <a @click="goToProfile">Profile</a>
-                    <a @click="logout">Logout</a>
+                  <!-- <router-link to="/about" class="nav-link">About</router-link> -->
+                  <a @click="goToProfile">Profile</a>
+                  <a @click="logout">Logout</a>
                 </div>
                 </div>
             </div>
@@ -331,7 +331,7 @@ import axios from 'axios';
           if (error.response.status === 401) {
             alert("Invalid session. Please try again.");
           } else if (error.response.status === 404) {
-            alert("No Drives found.");
+            // alert("No Drives found.");
           } else {
             alert("Something went wrong!");
           }
@@ -526,6 +526,13 @@ input {
   /* padding: 8px; */
   margin: 5px;
 }
+
+/* .v-card {
+  background: linear-gradient(135deg, #324247, #EAEAEA);
+  color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+} */
 @media (max-width: 600px) {
   .l2 {
     flex-direction: column;

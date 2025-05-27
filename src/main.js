@@ -7,6 +7,9 @@ import "bootstrap";
 import router from './router'
 import store from './store';
 import VueGoogleMaps from "@fawmi/vue-google-maps";
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+
 
 loadFonts()
 

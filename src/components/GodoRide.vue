@@ -8,15 +8,15 @@
             <div>
                 <div class="l2">
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <router-link to="/home" style="color: #324247;">Home</router-link>
-                    <router-link :to="`/drive?session=${sessionId}`" style="color: #324247;">Drive</router-link>
+                  <router-link :to="`/home?session=${sessionId}`" style="color: #324247;">Home</router-link>
+                  <router-link :to="`/drive?session=${sessionId}`" style="color: #324247;">Drive</router-link>
                     <router-link :to="`/ride?session=${sessionId}`" style="color: #F4A261;">Ride</router-link>
                     <router-link :to="`/delivery?session=${sessionId}`" style="color: #324247;">Delivery</router-link>
                 </div>
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <a>About</a>
-                    <a @click="goToProfile">Profile</a>
-                    <a @click="logout">Logout</a>
+                  <!-- <router-link to="/about" class="nav-link">About</router-link> -->
+                  <a @click="goToProfile">Profile</a>
+                  <a @click="logout">Logout</a>
                 </div>
                 </div>
             </div>
@@ -59,6 +59,9 @@
                     </v-chip>
                   </td>
                   <td>
+                    <v-btn icon variant="text" color="primary">
+                    <v-icon size="20">mdi-eye</v-icon>
+                  </v-btn>
                     <v-btn variant="text" color="blue" @click="openEditDialog(ride)">
                       <v-icon>mdi-pencil</v-icon>
                     </v-btn>
@@ -222,7 +225,7 @@ import axios from 'axios';
           if (error.response.status === 401) {
             alert("Invalid session. Please try again.");
           } else if (error.response.status === 404) {
-            alert("No Rides found.");
+            // alert("No Rides found.");
           } else {
             alert("Something went wrong!");
           }

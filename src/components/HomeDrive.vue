@@ -8,21 +8,26 @@
             <div>
                 <div class="l2">
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <router-link to="/home" style="color: #F4A261;">Home</router-link>
-                    <router-link :to="`/drive?session=${sessionId}`" style="color: #324247;">Drive</router-link>
+                  <router-link :to="`/home?session=${sessionId}`" style="color: #F4A261;">Home</router-link>
+                  <router-link :to="`/drive?session=${sessionId}`" style="color: #324247;">Drive</router-link>
                     <router-link :to="`/ride?session=${sessionId}`" style="color: #324247;">Ride</router-link>
                     <router-link :to="`/delivery?session=${sessionId}`" style="color: #324247;">Delivery</router-link>
                   </div>
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <a>About</a>
-                    <a @click="goToProfile">Profile</a>
-                    <a @click="logout">Logout</a>
+                  <!-- <router-link to="/about" class="nav-link">About</router-link> -->
+                  <a @click="goToProfile">Profile</a>
+                  <a @click="logout">Logout</a>
                 </div>
                 </div>
             </div>
+            
         </div>
   
+
+        
         <div class="content">
+
+          
           
 
             <div style="display: flex; flex-direction: column; align-items: center;width: 400px;">
@@ -40,9 +45,10 @@
                       <v-select class="input-group"
                         v-model="selectedVehicleId"
                         label="Vehicle"
-                        :items="vehicles.filter(v => v.status === 'Active')"
+                        :items="vehicles"
                         item-title="vehicleName"
                         item-value="vehicleId"
+                        no-data-text="Vehicle Not-available"
                         @update:modelValue="updateVehicleCapacity"
                         @click="fetchVehicles"
                       ></v-select>
@@ -50,7 +56,8 @@
           
                     <v-text-field class="input-group"
                       label="Starting point" 
-                      v-model="startingPoint" 
+                      v-model="startingPoint"
+                      @input="startingPoint = startingPoint.toUpperCase()"
                       required
                     ></v-text-field>
                     <!-- <v-autocomplete class="input-group"
@@ -62,8 +69,11 @@
                     <v-text-field class="input-group"
                       label="Destination" 
                       v-model="destination" 
+                      @input="destination = destination.toUpperCase()"
                       required
                     ></v-text-field>
+                    <v-btn @click="triggerRoute">Show Route</v-btn>
+
                     
                     <v-field class="input-group">
                         <input type="date" v-model="date">
@@ -88,7 +98,7 @@
                     <button class="button" style="color: white; background-color: #324247;" @click="addDrive()">Continue</button>
                 </div>
             </div>
-            <div>
+            <!-- <div>
                 
                   <GMapMap
                     :center="mapCenter"
@@ -101,16 +111,46 @@
                       :draggable="false"
                     />
                   </GMapMap>
-            </div>
+            </div> -->
+
+            <div>
+          <MapView 
+            ref="mapRef"
+            :center="mapCenter"
+            :zoom="12"
+            :startingPoint="startingPoint" 
+            :destination="destination"
+            style="width: 400px; height: 500px;border-radius: 10px;"
+            />
+          </div>
         
         </div>
+
+        <div>
+          <v-snackbar
+          v-model="snackbar"
+          :timeout="2000"
+          :color="snackbarColor"
+          location="top centre"
+        >
+          {{ snackbarMessage }}
+        </v-snackbar>
+        </div>
+        
     </div>
+
+    
+
   </template>
   
   <script>
 import axios from 'axios';
+import MapView from './MapView.vue';
+
 
   export default {
+  components: { MapView },
+
     data() {
       const now = new Date();
     return {
@@ -128,6 +168,8 @@ import axios from 'axios';
         selectedVehicleCapacity: 0,
         fetched: false,
         mapCenter: { lat: 9.6878, lng: 76.3354 },
+        snackbar: false,
+        snackbarMessage: '',
       };
     },
     async mounted() {
@@ -153,12 +195,14 @@ import axios from 'axios';
       try {
         const response = await axios.get(`${this.$store.getters.getUrl}/api/godo/vehicles?session=${this.sessionId}`);
 
-        this.vehicles = response.data;
+        // this.vehicles = response.data;
+        this.vehicles = response.data.filter(v => v.status === 'Active'); 
         this.fetched = true; // Set to true after fetching once
           
 
         if (this.vehicles.length === 0) {
-          alert("No vehicles found for this user.");
+          // alert("No vehicles found for this user.");
+
         }
       } catch (error) {
         this.fetched = false; // Reset fetched flag on error
@@ -179,6 +223,9 @@ import axios from 'axios';
       this.selectedVehicleCapacity = selectedVehicle ? selectedVehicle.capacity : 0;
       
     },
+    triggerRoute() {
+      this.$refs.mapRef.showRoute()
+    },
       async addDrive(){
         const dateTimeString = `${this.date}T${this.time}:00`; // "2025-01-20T09:00:00"
 
@@ -191,7 +238,10 @@ import axios from 'axios';
               !this.startingPoint ||
               !this.destination
             ) {
-              alert("Please fill in all fields before adding a drive.");
+              // alert("Please fill in all fields before adding a drive.");
+              this.snackbarMessage = "Please fill in all fields before adding a drive."
+              this.snackbarColor = 'red';
+              this.snackbar = true; 
               return;
             }
         const payload ={
@@ -207,15 +257,21 @@ import axios from 'axios';
         }
       try{
         
-        const response = await this.$store.dispatch('addDrive',payload)
+        const response = await this.$store.dispatch('user/addDrive',payload)
         if(response){
           console.log("Drive added!");
-          alert("Drive added successfully!");
-          this.$router.push(`/drive?session=${this.sessionId}`);
-          
+          // alert("Drive added successfully!");
+          this.snackbarMessage = "Drive added successfully"
+          this.snackbarColor = 'green';
+          this.snackbar = true;        
+            setTimeout(() => {
+                  this.$router.push(`/drive?session=${this.sessionId}`);
+                }, 2000);          
         }
       }catch (error){
-        this.errorMessage = 'Failed to send OTP. Please try again.';
+        this.snackbarMessage = 'Failed to add drive';
+          this.snackbarColor = 'red';
+          this.snackbar = true;
       }
     },
       async goToProfile() {
@@ -275,6 +331,7 @@ import axios from 'axios';
   </script>
   
   <style scoped>
+ 
   .l1 {
   display: flex;
   flex-direction: row;

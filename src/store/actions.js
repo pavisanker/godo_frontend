@@ -6,7 +6,7 @@ export default {
         {
             headers: { 'Content-Type': 'application/json' }
         });
-        if(response.status >=200 || response.status <300){
+        if(response.status >=200 && response.status <300){
             console.log(response);
             commit('setSessionId',response.data.sessionId)
             return true;
@@ -19,7 +19,7 @@ export default {
             headers: { 'Content-Type': 'application/json' }
 
             });
-            if(response.status>=200 || response.status<300){
+            if(response.status>=200 && response.status<300){
                 console.log(response);
                 return response;
             }
@@ -31,24 +31,13 @@ export default {
             headers: { 'Content-Type': 'application/json' }
 
             });
-            if(response.status>=200 || response.status<300){
+            if(response.status>=200 && response.status<300){
                 console.log(response);
                 return true;
             }
 
     },
-    async addDrive({rootGetters},payload){
-        const response = await axios.post(`${rootGetters.getUrl}/api/godo/route?session=${payload.sessionId}&vehicleId=${payload.vehicleId}`,payload.data,
-            {
-            headers: { 'Content-Type': 'application/json' }
-
-            });
-            if(response.status>=200 || response.status<300){
-                console.log(response);
-                return true;
-            }
-
-    },
+    
     async addVehicle({rootGetters},payload){
         const response = await axios.post(`${rootGetters.getUrl}/api/godo/addVehicle?session=${payload.session}`,payload.formData,
             {
@@ -56,7 +45,7 @@ export default {
 
 
             });
-            if(response.status>=200 || response.status<300){
+            if(response.status>=200 && response.status<300){
                 console.log(response);
                 return response;
             }

@@ -11,7 +11,7 @@
             <a>Welcome...</a>
         </div>
         <div style="display: flex;flex-direction: row;justify-content: space-between;">
-          <a>About</a>
+          <router-link to="/about" class="nav-link">About</router-link>
           <router-link to="/" :style="{ color: !showDialog ? '#F4A261' : '#324247', textDecoration: 'none' }">Login</router-link>
           <router-link to="#" @click="showDialog = true" :style="{ color: showDialog ? '#F4A261' : '#324247', textDecoration: 'none' }">
             Admin
@@ -46,7 +46,7 @@
         </v-card-text>
         <v-divider></v-divider>
 
-        <v-card-actions class="d-flex justify-center">
+        <v-card-actions class="d-flex justify-space-between">
           <v-btn color="red" @click="showDialog = false">Cancel</v-btn>
           <v-btn color="green" @click="verifyPassword">Login</v-btn>
         </v-card-actions>
@@ -86,7 +86,7 @@ export default {
     ...mapGetters(['getSessionId']),
     sessionId(){
       return this.getSessionId
-      // return 'b2543960-4f86-43bd-8222-5c10af578c24' //Manual sessionId
+      // return ' 7ea75b90-4cbf-4919-969f-48a623a2dfef' //Manual sessionId
     }
   },
   methods: {

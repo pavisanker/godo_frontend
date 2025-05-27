@@ -7,8 +7,14 @@ import HomeDelivery from './components/HomeDelivery.vue';
 import GodoDrive from './components/GodoDrive.vue';
 import GodoRide from './components/GodoRide.vue';
 import GodoDelivery from './components/GodoDelivery.vue';
-import GodoAdmin from './components/GodoAdmin.vue';
-import AdminVehicles from './components/AdminVehicles.vue';
+import GodoAdmin from './components/admin/GodoAdmin.vue';
+import AdminVehicles from './components/admin/AdminVehicles.vue';
+import AdminUsers from './components/admin/AdminUsers.vue';
+import AdminDashboard from './components/admin/AdminDashboard.vue';
+import AdminDrives from './components/admin/AdminDrives.vue';
+import AdminBookings from './components/admin/AdminBookings.vue';
+import AdminHistory from './components/admin/AdminHistory.vue';
+import GodoAbout from './components/GodoAbout.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -21,8 +27,18 @@ const router = createRouter({
         { path: '/drive', component: GodoDrive},
         { path: '/ride', component: GodoRide},
         { path: '/delivery', component: GodoDelivery},
-        { path: '/admin', component:GodoAdmin},
-        { path: '/admin/vehicles', component:AdminVehicles}
+        { path: '/admin', component:GodoAdmin,
+            children: [
+                {path: '', redirect: '/admin/dashboard' },
+                {path: 'dashboard', component: AdminDashboard },
+                {path: 'vehicles', component: AdminVehicles},
+                {path: 'users', component: AdminUsers},
+                {path: 'drives', component: AdminDrives},
+                {path: 'bookings', component: AdminBookings},
+                {path: 'history', component: AdminHistory},
+            ]
+        },
+        { path: '/about', component: GodoAbout},
     ],
 });
 

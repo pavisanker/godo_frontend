@@ -7,7 +7,7 @@
           <v-icon class="hidden-icon">mdi-dots-horizontal</v-icon>
         </div>
         <v-list class="sidebar-content">
-          <v-list-item to="/admin">
+          <v-list-item to="/admin/dashboard">
             <v-icon>mdi-view-dashboard</v-icon>
             <v-list-item-content>Dashboard</v-list-item-content>
           </v-list-item>
@@ -19,7 +19,7 @@
             <v-icon>mdi-car</v-icon>
             <v-list-item-content>Vehicles</v-list-item-content>
           </v-list-item>
-          <v-list-item to="/admin/routes">
+          <v-list-item to="/admin/drives">
             <v-icon>mdi-map-marker-path</v-icon>
             <v-list-item-content>Drives</v-list-item-content>
           </v-list-item>
@@ -46,15 +46,9 @@
       </v-navigation-drawer>
   
       <!-- Main Content -->
-      <v-main class="p-4 bg-light">
-        <div class="container-fluid">
-          <div class="d-flex-row align-items-center mb-3">
-            <h2>Admin Dashboard</h2>
-            
-            
-          </div>
-          <router-view></router-view>
-        </div>
+      <v-main class="p-4">
+        <router-view></router-view>
+
       </v-main>
       
     </div>
@@ -64,7 +58,7 @@
 // import axios from 'axios';
 
   export default {
-    name: "AdminPanel",
+    name: "GodoAdmin",
     data(){
       return{
         

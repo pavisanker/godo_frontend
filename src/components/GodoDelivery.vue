@@ -8,15 +8,15 @@
             <div>
                 <div class="l2">
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <router-link to="/home" style="color: #324247;">Home</router-link>
+                    <router-link :to="`/home?session=${sessionId}`" style="color: #324247;">Home</router-link>
                     <router-link :to="`/drive?session=${sessionId}`" style="color: #324247;">Drive</router-link>
                     <router-link :to="`/ride?session=${sessionId}`" style="color: #324247;">Ride</router-link>
                     <router-link :to="`/delivery?session=${sessionId}`" style="color: #F4A261;">Delivery</router-link>
                 </div>
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <a>About</a>
-                    <a @click="goToProfile">Profile</a>
-                    <a @click="logout">Logout</a>
+                  <!-- <router-link to="/about" class="nav-link">About</router-link> -->
+                  <a @click="goToProfile">Profile</a>
+                  <a @click="logout">Logout</a>
                 </div>
                 </div>
             </div>
@@ -222,7 +222,7 @@ import axios from 'axios';
           if (error.response.status === 401) {
             alert("Invalid session. Please try again.");
           } else if (error.response.status === 404) {
-            alert("No Deliveries found.");
+            // alert("No Deliveries found.");
           } else {
             alert("Something went wrong!");
           }
@@ -240,8 +240,8 @@ import axios from 'axios';
         hour12: true // Use 24-hour format
       });
     },
-    openEditDialog(ride) {
-      this.editedRide = { ...ride };
+    openEditDialog(delivery) {
+      this.editedDelivery = { ...delivery };
       this.editDialog = true;
     },
     async saveChanges(bookingId) {
@@ -260,6 +260,8 @@ import axios from 'axios';
     },
     async deleteDelivery(bookingId) {
       try {
+        console.log("bookingId",bookingId);
+        
         await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteDelivery/${bookingId}`);
         this.deliveries = this.deliveries.filter(v => v.bookingId !== bookingId);
         this.editDialog = false;

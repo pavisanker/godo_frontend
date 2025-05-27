@@ -8,15 +8,15 @@
             <div>
                 <div class="l2">
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <router-link to="/home" style="color: #F4A261;">Home</router-link>
-                    <router-link :to="`/drive?session=${sessionId}`" style="color: #324247;">Drive</router-link>
+                  <router-link :to="`/home?session=${sessionId}`" style="color: #F4A261;">Home</router-link>
+                  <router-link :to="`/drive?session=${sessionId}`" style="color: #324247;">Drive</router-link>
                     <router-link :to="`/ride?session=${sessionId}`" style="color: #324247;">Ride</router-link>
                     <router-link :to="`/delivery?session=${sessionId}`" style="color: #324247;">Delivery</router-link>
                   </div>
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <a>About</a>
-                    <a @click="goToProfile">Profile</a>
-                    <a @click="logout">Logout</a>
+                  <!-- <router-link to="/about" class="nav-link">About</router-link> -->
+                  <a @click="goToProfile">Profile</a>
+                  <a @click="logout">Logout</a>
                 </div>
                 </div>
             </div>
@@ -39,6 +39,7 @@
                   <v-text-field class="input-group"
                       label="Starting point" 
                       v-model="startingPoint" 
+                      @input="startingPoint = startingPoint.toUpperCase()"
                       required
                     ></v-text-field>
                     <!-- <v-autocomplete class="input-group"
@@ -50,6 +51,7 @@
                     <v-text-field class="input-group"
                       label="Destination" 
                       v-model="destination" 
+                      @input="destination = destination.toUpperCase()"
                       required
                     ></v-text-field>
                     
@@ -119,7 +121,7 @@
               </v-card>
             </v-dialog>
             </div>
-            <div>
+            <!-- <div>
                 
                   <GMapMap
                     :center="mapCenter"
@@ -132,8 +134,31 @@
                       :draggable="false"
                     />
                   </GMapMap>
+            </div> -->
+
+            <div>
+            <MapView 
+              ref="mapRef"
+              :center="mapCenter"
+              :zoom="12"
+              :startingPoint="startingPoint" 
+              :destination="destination"
+              style="width: 400px; height: 500px;border-radius: 10px;"
+              />
             </div>
         
+        </div>
+
+        <div>
+          <v-snackbar
+          v-model="snackbar"
+          :timeout="2000"
+          :color="snackbarColor"
+          location="top center"
+
+        >
+          {{ snackbarMessage }}
+        </v-snackbar>
         </div>
     </div>
   </template>
@@ -141,8 +166,12 @@
 
 <script>
 // import axios from 'axios';
+import MapView from './MapView.vue';
+
 
   export default {
+  components: { MapView },
+
     data() {
     return {
         sessionId: this.$route.query.session || localStorage.getItem("sessionId") || "",
@@ -154,6 +183,8 @@
         results: [], // Holds search results from backend
         dialog: false, // Controls the popup
         selectedRoute: null,
+        snackbar: false,
+        snackbarMessage: '',
       };
     },
     async mounted() {
@@ -191,19 +222,25 @@
       },
       async searchRoutes() {
       if (!this.startingPoint || !this.destination) {
-        alert("Please enter both Starting Point and Destination.");
+        // alert("Please enter both Starting Point and Destination.");
+        this.snackbarMessage = "Please enter both Starting Point and Destination.";
+          this.snackbarColor = 'red';
+          this.snackbar = true;
         return;
       }
 
       try {
         const response = await fetch(`${this.$store.getters.getUrl}/api/godo/deliveryRoutes?start=${this.startingPoint}&destination=${this.destination}&weight=${this.weight}`);
         if (!response.ok) throw new Error("Failed to fetch routes.");
-        
+        this.$refs.mapRef.showRoute();
         this.results = await response.json();
         this.dialog = true;
       } catch (error) {
         console.error("Error fetching routes:", error);
-        alert("Please choose another route or try again Later...");
+        // alert("Please choose another route or try again Later...");
+        this.snackbarMessage = "Please choose another route or try again Later...";
+          this.snackbarColor = 'red';
+          this.snackbar = true; 
       }
     },
       async bookDelivery(route) {
@@ -234,10 +271,16 @@
         });
 
         if (response.ok) {
-          alert("Booking successful!");
+          // alert("Booking successful!");
           this.selectedRoute = null;
           // window.location.reload();
-          this.$router.push(`/delivery?session=${this.sessionId}`);
+
+          this.snackbarMessage = "Booking successful!";
+          this.snackbarColor = 'green';
+          this.snackbar = true;        
+            setTimeout(() => {
+              this.$router.push(`/delivery?session=${this.sessionId}`);
+                }, 2000);
 
         } else {
           const errorMessage = await response.text();
@@ -245,7 +288,10 @@
         }
       } catch (error) {
         console.error("Booking failed:", error);
-        alert("Failed to book travel.");
+        // alert("Failed to book travel.");
+        this.snackbarMessage = "Booking failed";
+          this.snackbarColor = 'red';
+          this.snackbar = true;
       }
     },
     formatDate(isoString) {
