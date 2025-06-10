@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",
+    "@mapbox/polyline": "^1.2.1",
     "@mdi/font": "5.9.55",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "axios": "^1.7.9",

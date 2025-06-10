@@ -42,6 +42,7 @@
                   <th class="text-center">Destination</th>
                   <th class="text-center">Boarding Time</th>
                   <th class="text-center">Passengers</th>
+                  <th class="text-center">Total Fare</th>
                   <th class="text-center">Status</th>
                   <th class="text-center">Actions</th>
                 </tr>
@@ -53,18 +54,37 @@
                   <td>{{ ride.destination }}</td>
                   <td>{{ formatDate(ride.boardingTime) }}</td>
                   <td>{{ ride.passengerCount }}</td>
+                  <td><v-icon left>mdi-currency-inr</v-icon>{{ ride.amount/100 }}</td>
                   <td>
-                    <v-chip :color="ride.status === 'Booked' ? 'green' : 'blue'" dark>
-                      {{ ride.status }}
+                    <v-chip :color="getStatusName(ride.status) === 'Pending' ? 'red' : 'blue'" dark>
+                      {{ getStatusName(ride.status) }}
                     </v-chip>
                   </td>
                   <td>
-                    <v-btn icon variant="text" color="primary">
+                    <v-btn icon variant="text" color="primary" @click="viewDetails(ride.routeId)">
                     <v-icon size="20">mdi-eye</v-icon>
                   </v-btn>
                     <v-btn variant="text" color="blue" @click="openEditDialog(ride)">
                       <v-icon>mdi-pencil</v-icon>
                     </v-btn>
+                    <v-btn
+                      v-if="ride.paymentStatus !== 4" 
+                      color="green"
+                      @click="goToPayment(ride)"
+                    >
+                    <v-icon left>mdi-currency-inr</v-icon> Pay
+                  </v-btn>
+                  <v-chip
+                  v-else
+                  :color="getStatusName(ride.paymentStatus) === 'Success' ? 'success' : 'default'"
+                  class="ma-2"
+                  label
+                  small
+                >
+                  <v-icon left small>mdi-currency-inr</v-icon>
+                  {{ getStatusName(ride.paymentStatus) }}
+                </v-chip>
+
                   </td>
                 </tr>
               </tbody>
@@ -75,25 +95,22 @@
           <v-dialog v-model="editDialog" max-width="500px">
             <v-card>
               <v-card-title class="d-flex justify-center align-center">
-                Edit Ride
+                Confirm Delete
               </v-card-title>
               <v-divider></v-divider>
               <v-card-text>
-                <v-form ref="editForm">
-                  <!-- <v-text-field label="Start" v-model="editedRide.start" required></v-text-field>
-                  <v-text-field label="Destination" v-model="editedRide.destination" required></v-text-field>
-                  <v-text-field label="Boarding Time" v-model="editedRide.boardingTime" type="datetime-local" required></v-text-field>
-                  <v-text-field label="Vacancy" v-model="editedRide.vacancy" type="number" required></v-text-field> -->
-                  <!-- <v-select label="Status" v-model="editedRide.status" :items="['Scheduled', 'Completed']"></v-select> -->
-                  <v-field>Confirm Delete</v-field>
-                </v-form>
-              </v-card-text>
+                
+              Are you sure you want to cancel this booking?<br>
+              From 
+              <b>{{ editedRide?.start }}</b> to <b>{{ editedRide?.destination }}</b>
+            </v-card-text>
               <v-divider></v-divider>
               <v-card-actions>
-                  <v-btn color="red" @click="deleteRide(editedRide.bookingId)">Delete</v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn color="blue" @click="saveChanges(editedRide.bookingId)">Save</v-btn>
+                  <!-- <v-btn color="blue" @click="saveChanges(editedRide.bookingId)">Save</v-btn> -->
                   <v-btn @click="editDialog = false">Cancel</v-btn>
+                  <v-spacer></v-spacer>
+                  <v-btn color="red" :disabled="editedRide.paymentStatus !== 1" @click="deleteRide(editedRide.bookingId)">Delete</v-btn>
+
                 </v-card-actions>
             </v-card>
           </v-dialog>
@@ -114,6 +131,9 @@
                       <th class="text-center">Start</th>
                       <th class="text-center">Destination</th>
                       <th class="text-center">Boarding Time</th>
+                      <th class="text-center">Route ID</th>
+                      <th class="text-center">Amount</th>
+                      <th class="text-center">Payment ID</th>
                       <th class="text-center">Status</th>
                     </tr>
                   </thead>
@@ -123,11 +143,13 @@
                       <td class="text-center">{{ ride.start }}</td>
                       <td class="text-center">{{ ride.destination }}</td>
                       <td class="text-center">{{ formatDate(ride.boardingTime) }}</td>
-                      <td class="text-center">
-                        <v-chip :color="ride.status === 'Completed' ? 'gray' : 'orange'" dark>
-                          {{ ride.status }}
-                        </v-chip>
-                      </td>
+                      <td>{{ ride.travelId }}</td>
+                      <td>
+                          <v-icon left small>mdi-currency-inr</v-icon>
+                        {{ ride.amount/100 }}</td>
+                      <td>{{ ride.paymentId }}</td>
+                      <td>{{getStatusName(ride.status) }}</td>
+                      
                     </tr>
                   </tbody>
                 </v-table>
@@ -138,7 +160,55 @@
           </v-row>
   </v-container>
 
-  
+  <v-dialog v-model="showDetailsDialog" max-width="500px">
+  <v-card class="pa-4 rounded-lg elevation-3">
+    
+    <!-- Title -->
+    <v-card-title class="text-h6 d-flex justify-space-between align-center">
+      <span>🚗 Drive Details</span>
+      <v-btn icon @click="showDetailsDialog = false">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </v-card-title>
+
+    <v-divider></v-divider>
+
+    <!-- Driver Info -->
+    <v-card-text class="mt-4">
+      <v-row>
+        <v-col cols="12" class="mb-2">
+          <v-icon left color="primary">mdi-account</v-icon>
+          <strong>Name:</strong> {{ details.name || 'N/A' }}
+        </v-col>
+
+        <v-col cols="12" class="mb-2">
+          <v-icon left color="green">mdi-phone</v-icon>
+          <strong>Phone:</strong> {{ details.phone || 'N/A' }}
+        </v-col>
+
+        <v-col cols="12" class="mb-2">
+          <v-icon left color="blue">mdi-car</v-icon>
+          <strong>Vehicle Number:</strong> {{ details.vehicleNumber || 'N/A' }}
+        </v-col>
+
+        <v-col cols="12">
+          <v-icon left color="teal">mdi-car-side</v-icon>
+          <strong>Vehicle Type:</strong> {{ details.vehicleType || 'N/A' }}
+        </v-col>
+      </v-row>
+    </v-card-text>
+
+    <v-divider></v-divider>
+
+    <!-- Actions -->
+    <v-card-actions class="justify-end">
+      <v-btn color="primary" variant="outlined" @click="showDetailsDialog = false">
+        <v-icon left>mdi-check</v-icon> Close
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
             
         
         </div>
@@ -159,6 +229,10 @@ import axios from 'axios';
         editDialog: false,
         editedRide: {},
         rideHistory: [],
+        statuses: [],
+        details: [],
+        showDetailsDialog: false,
+
     
       };
     },
@@ -177,9 +251,15 @@ import axios from 'axios';
       // if (this.isNewUser) {
       //   this.$router.push(`/profile?session=${this.sessionId}`);
       // }
+      const statusRes = await axios.get(`${this.$store.getters.getUrl}/api/godo/viewStatus`);
+      this.statuses = statusRes.data;
     },
+    
     methods: {
-
+      getStatusName(id) {
+          const match = this.statuses.find(s => s.statusId === id);
+          return match ? match.statusName : 'Unknown';
+        },
       async goToProfile() {
         if (!this.sessionId) {
           alert("Session expired. Please log in again.");
@@ -276,10 +356,20 @@ import axios from 'axios';
 
   for (const ride of expiredRides) {
     try {
-      await axios.post(`${this.$store.getters.getUrl}/api/godo/history?session=${this.sessionId}&routeId=${ride.routeId}`);
+      if(ride.status === 4){
+          await axios.post(`${this.$store.getters.getUrl}/api/godo/history?session=${this.sessionId}&routeId=${ride.routeId}`);
 
-      await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteRide/${ride.bookingId}`);
-      this.rides = this.rides.filter(v => v.bookingId !== ride.bookingId);
+          await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteRide/${ride.bookingId}`);
+          this.rides = this.rides.filter(v => v.bookingId !== ride.bookingId);
+      }
+      else if(ride.status ===1){
+        await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteRide/${ride.bookingId}`);
+          this.rides = this.rides.filter(v => v.bookingId !== ride.bookingId);
+      }
+      else{
+        return;
+      }
+      
     } catch (error) {
       console.error(`Failed to delete ride (ID: ${ride.bookingId})`, error);
       alert(`Failed to delete ride (ID: ${ride.bookingId}). Check console for details.`);
@@ -295,6 +385,29 @@ async fetchRideHistory() {
     console.error("Error fetching ride history:", error);
   }
 },
+async viewDetails(routeId) {
+  try {
+    const response = await axios.get(`${this.$store.getters.getUrl}/api/godo/details/${routeId}`);
+            this.details = response.data;
+
+    this.showDetailsDialog = true; // Open the dialog
+  } catch (error) {
+    console.error("Error fetching booking details:", error);
+  }
+},
+
+goToPayment(ride) {
+    this.$router.push({
+      name: 'CreatePayment',  // must match the route name
+      query: {
+        customerId: ride.userId || '9191IM',
+        ownerId: ride.ownerId || '9191IM',
+        routeId: ride.routeId || 'defaultRoute',
+        bookingId: ride.bookingId || 'defaultBooking',
+        amount: ride.amount/100 || 100  // fallback
+      }
+    });
+  },
 
 
     }

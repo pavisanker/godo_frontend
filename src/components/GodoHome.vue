@@ -77,43 +77,59 @@
               <v-dialog v-model="dialog" max-width="500px">
                 <v-card class="rounded-lg">
                   <v-card-title class="text-h6 font-weight-bold text-center">
-                    🚏 Select a Route
+                    🚏 Available Routes
                   </v-card-title>
 
                   <v-card-text>
-                    <v-row>
+                    <v-row dense>
                       <v-col v-for="(route, index) in results" :key="index" cols="12">
-                        <v-card 
-                          class="route-card" 
-                          @click="bookTravel(route)"
-                        >
-                          <v-card-title class="d-flex align-center justify-space-between">
+                        <v-card class="route-card pa-3">
+                          <v-card-title class="d-flex align-center justify-space-between px-0 pb-1">
                             <span class="text-body-1 font-weight-medium">
                               <v-icon color="green" class="mr-1">mdi-map-marker</v-icon>
-                              {{ route.start }} 
-                              <v-icon color="blue" class="mx-2">mdi-arrow-right</v-icon> 
+                              {{ route.start }}
+                              <v-icon color="blue" class="mx-2">mdi-arrow-right</v-icon>
                               {{ route.destination }}
                             </span>
                           </v-card-title>
 
-                          <v-card-subtitle class="text-body-2 px-4">
-                            <div>
-                              <v-icon color="orange">mdi-seat</v-icon> 
-                              Seats Available: <b>{{ route.vacancy }}</b>
-                            </div>
-                            <div>
-                              <v-icon color="red">mdi-calendar</v-icon> 
-                              Date: <b>{{ formatDate(route.boardingTime) }}</b>
-                            </div>
-                            <div>
-                              <v-icon color="blue">mdi-clock-time-four-outline</v-icon> 
-                              Time: <b>{{ formatTime(route.boardingTime) }}</b>
-                            </div>
-                          </v-card-subtitle>
+                          <v-card-text class="px-0 py-1">
+                            <v-row dense>
+                              <v-col cols="6" class="d-flex align-center">
+                                <v-icon color="orange" class="mr-2">mdi-seat</v-icon>
+                                <b>Seats Available:</b>&nbsp;{{ route.vacancy }}
+                              </v-col>
 
+                              <v-col cols="6" class="d-flex align-center">
+                                <v-icon color="orange" class="mr-2">mdi-car</v-icon>
+                                <b>Vehicle:</b>&nbsp;{{ getVehicleType(route.capacity) }}
+                              </v-col>
 
-                          <v-card-actions class="justify-end">
-                            <v-btn color="primary" @click="bookTravel(route)">
+                              <v-col cols="6" class="d-flex align-center">
+                                <v-icon color="orange" class="mr-2">mdi-ruler</v-icon>
+                                <b>Distance:</b>&nbsp;{{ (route.distance / 1000).toFixed(1) }} Km
+                              </v-col>
+
+                              <v-col cols="6" class="d-flex align-center">
+                                <v-icon color="green" class="mr-2">mdi-currency-inr</v-icon>
+                                <b>Fare:</b>&nbsp;{{ (route.amount / 100).toFixed(2) }}
+                              </v-col>
+
+                              <v-col cols="6" class="d-flex align-center">
+                                <v-icon color="red" class="mr-2">mdi-calendar</v-icon>
+                                <b>{{ formatDate(route.boardingTime) }}</b>
+                              </v-col>
+
+                              <v-col cols="6" class="d-flex align-center">
+                                <v-icon color="blue" class="mr-2">mdi-clock-time-four-outline</v-icon>
+                                <b>{{ formatTime(route.boardingTime) }}</b>
+                              </v-col>
+                            </v-row>
+                          </v-card-text>
+
+                          <v-card-actions class="justify-end px-0 pt-2">
+                            <v-btn color="primary" @click="openConfirm(route)">
+                              Book {{ routeButtonLabel }}
                             </v-btn>
                           </v-card-actions>
                         </v-card>
@@ -121,13 +137,13 @@
                     </v-row>
                   </v-card-text>
 
-                <v-card-actions class="justify-end">
-                  <v-btn color="error" @click="dialog = false">
-                    <v-icon class="mr-1">mdi-close</v-icon> Close
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+                  <v-card-actions class="justify-end">
+                    <v-btn color="error" @click="dialog = false">
+                      <v-icon class="mr-1">mdi-close</v-icon> Close
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
 
         
       </div>
@@ -171,6 +187,22 @@
           {{ snackbarMessage }}
         </v-snackbar>
         </div>
+        
+        <v-dialog v-model="confirmDialog" max-width="400">
+          <v-card>
+            <v-card-title class="headline">Confirm Booking</v-card-title>
+            <v-card-text>
+              Are you sure you want to book this route from 
+              <b>{{ selectedRoute?.start }}</b> to <b>{{ selectedRoute?.destination }}</b>?
+            </v-card-text>
+
+            <v-card-actions class="justify-end">
+              <v-btn color="grey" text @click="confirmDialog = false">Cancel</v-btn>
+              <v-btn color="primary" @click="confirmBooking">Yes, Book</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
   </div>
 </template>
 
@@ -194,6 +226,8 @@ export default {
       selectedRoute: null,
       snackbar: false,
       snackbarMessage: '',
+      confirmDialog: false,
+
       
     };
   },
@@ -209,7 +243,15 @@ export default {
     }
   },
   methods: {
-  
+
+    openConfirm(route) {
+    this.selectedRoute = route
+    this.confirmDialog = true
+  },
+  confirmBooking() {
+    this.confirmDialog = false
+    this.bookTravel(this.selectedRoute)
+  },
     async goToProfile() {
       if (!this.sessionId) {
         alert("Session expired. Please log in again.");
@@ -275,7 +317,9 @@ export default {
         destination: this.selectedRoute.destination,
         routeId: this.selectedRoute.routeId,
         passengerCount: this.passengerCount,
-        boardingTime: this.selectedRoute.boardingTime
+        boardingTime: this.selectedRoute.boardingTime,
+        distance: this.selectedRoute.distance,
+        amount: this.selectedRoute.amount,
 
       };
 
@@ -324,6 +368,12 @@ export default {
     return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }); 
     // Example Output: "09:30 AM"
   },
+  getVehicleType(capacity) {
+    if (capacity == 2) return 'Bike';
+    else if (capacity == 5) return 'Car';
+    else if (capacity == 7) return 'Mini Van';
+    else return 'Van/Bus';
+  }
   }
 };
 </script>

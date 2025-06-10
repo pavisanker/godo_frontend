@@ -31,6 +31,10 @@
             <v-icon>mdi-history</v-icon>
             <v-list-item-content>History</v-list-item-content>
           </v-list-item>
+          <v-list-item to="/admin/payments">
+            <v-icon>mdi-currency-inr</v-icon>
+            <v-list-item-content>Payments</v-list-item-content>
+          </v-list-item>
         </v-list>
         <v-spacer></v-spacer>
         <v-list class="sidebar-bottom">

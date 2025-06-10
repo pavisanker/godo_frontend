@@ -15,6 +15,9 @@
             <th>Destination</th>
             <th>Boarding Time</th>
             <th>Delivery</th>
+            <th>Travel ID</th>
+            <th>Amount</th>
+            <th>Payment ID</th>
             <th>Status</th>
             </tr>
           </thead>
@@ -28,9 +31,12 @@
             <v-icon v-if="history.deliveryCustomerId" color="green">mdi-check</v-icon>
             <span v-else>Nil</span>
           </td>
+            <td>{{ history.travelId }}</td>
             <td>
-              <v-chip color="gray" dark>Completed</v-chip>
-            </td>
+                <v-icon left small>mdi-currency-inr</v-icon>
+              {{ history.amount/100 }}</td>
+            <td>{{ history.paymentId }}</td>
+            <td>{{ history.status }}</td>
           </tr>
           </tbody>
         </v-table>

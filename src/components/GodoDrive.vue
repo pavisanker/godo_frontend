@@ -43,6 +43,8 @@
             <th class="text-center">Start</th>
             <th class="text-center">Destination</th>
             <th class="text-center">Boarding Time</th>
+            <th class="text-center">Distance</th>
+            <th class="text-center">Fare</th>
             <th class="text-center">Vacancy</th>
             <th class="text-center">Booked</th>
             <th class="text-center">Delivery</th>
@@ -56,12 +58,14 @@
             <td>{{ drive.start }}</td>
             <td>{{ drive.destination }}</td>
             <td>{{ formatDate(drive.boardingTime) }}</td>
+            <td>{{ drive.distance/1000 }}Km</td>
+            <td><v-icon left>mdi-currency-inr</v-icon>{{ drive.amount/100 }}</td>
             <td>{{ drive.vacancy }}</td>
             <td>{{ drive.booked }}</td>
             <td>{{ drive.delivery }}</td>
             <td>
-              <v-chip :color="drive.status === 'Booked' ? 'green' : drive.status === 'Pending' ? 'red' : 'blue'" dark>
-                {{ drive.status }}
+              <v-chip :color="drive.status === 'Booked' ? 'green' : getStatusName(drive.status) === 'Pending' ? 'red' : 'blue'" dark>
+                {{ getStatusName(drive.status) }}
               </v-chip>
 
             </td>
@@ -76,6 +80,16 @@
               <v-btn icon variant="text" color="green" @click="openConfirmDialog(drive)">
                 <v-icon>mdi-check</v-icon>
               </v-btn>
+              <v-chip
+                :color="getStatusName(drive.paymentStatus) === 'Success' ? 'success' : 'primary'"
+                class="ma-2"
+                label
+                small
+              >
+                <v-icon left small>mdi-currency-inr</v-icon>
+                {{ getStatusName(drive.paymentStatus) }}
+              </v-chip>
+
             </td>
           </tr>
         </tbody>
@@ -90,21 +104,25 @@
         </v-card-title>
         <v-divider></v-divider>
         <v-card-text>
-          <v-form ref="editForm">
-            <!-- <v-text-field label="Start" v-model="editedDrive.start" required></v-text-field>
-            <v-text-field label="Destination" v-model="editedDrive.destination" required></v-text-field>
-            <v-text-field label="Boarding Time" v-model="editedDrive.boardingTime" type="datetime-local" required></v-text-field> -->
-            <!-- <v-text-field label="Vacancy" v-model="editedDrive.vacancy" type="number" required></v-text-field> -->
-            <!-- <v-select label="Status" v-model="editedDrive.status" :items="['Scheduled', 'Completed']"></v-select> -->
-            <v-field>Confirm Delete</v-field>
-          </v-form>
+              Are you sure you want to cancel this route?<br>
+              From 
+              <b>{{ editedDrive?.start }}</b> to <b>{{ editedDrive?.destination }}</b>
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
-            <v-btn color="red" @click="deleteDrive(editedDrive.routeId)">Delete</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn color="blue" @click="saveChanges(editedDrive.routeId)">Save</v-btn>
             <v-btn @click="editDialog = false">Cancel</v-btn>
+                        <v-spacer></v-spacer>
+            <!-- <v-btn  v-if="editedDrive.paymentStatus !== 4" 
+              color="red" @click="deleteDrive(editedDrive.routeId)">Delete</v-btn> -->
+              <v-btn 
+                color="red" 
+                @click="deleteDrive(editedDrive.routeId)" 
+                :disabled="editedDrive.paymentStatus !== 1"
+              >
+                Delete
+              </v-btn>
+
+
           </v-card-actions>
       </v-card>
     </v-dialog>
@@ -112,11 +130,11 @@
 <v-dialog v-model="confirmDialog" max-width="400px">
   <v-card>
     <v-card-title class="d-flex justify-center align-center">
-      Confirm Completion
+      Confirm Start
     </v-card-title>
     <v-divider></v-divider>
     <v-card-text class="text-center">
-      Are you sure you want to mark this drive as **Completed**?
+      Are you sure you want to mark this drive as **Started**?
     </v-card-text>
     <v-divider></v-divider>
     <v-card-actions class="d-flex justify-center">
@@ -216,6 +234,9 @@
             <th class="text-center">Destination</th>
             <th class="text-center">Boarding Time</th>
             <th class="text-center">Delivery</th>
+            <th class="text-center">Travel ID</th>
+            <th class="text-center">Amount</th>
+            <th class="text-center">Payment ID</th>
             <th class="text-center">Status</th>
           </tr>
         </thead>
@@ -229,9 +250,13 @@
             <v-icon v-if="drive.deliveryCustomerId" color="green">mdi-check</v-icon>
             <span v-else>Nil</span>
           </td>
+            <td>{{ drive.travelId }}</td>
             <td>
-              <v-chip color="gray" dark>Completed</v-chip>
-            </td>
+                <v-icon left small>mdi-currency-inr</v-icon>
+              {{ drive.amount/100 }}</td>
+            <td>{{ drive.paymentId }}</td>
+            <td>{{getStatusName(drive.status) }}</td>
+
           </tr>
         </tbody>
       </v-table>
@@ -245,6 +270,17 @@
             
         
         </div>
+        <div>
+          <v-snackbar
+          v-model="snackbar"
+          :timeout="2000"
+          :color="snackbarColor"
+          location="top centre"
+        >
+          {{ snackbarMessage }}
+        </v-snackbar>
+        </div>
+
     </div>
   </template>
 <script>
@@ -267,6 +303,9 @@ import axios from 'axios';
         bookedPassengers: [],
         bookedDeliveries: [],
         showDetails: false,
+        statuses: [],
+        snackbar: false,
+        snackbarMessage: '',
 
       };
     },
@@ -283,9 +322,14 @@ import axios from 'axios';
       // if (this.isNewUser) {
       //   this.$router.push(`/profile?session=${this.sessionId}`);
       // }
+      const statusRes = await axios.get(`${this.$store.getters.getUrl}/api/godo/viewStatus`);
+      this.statuses = statusRes.data;
     },
     methods: {
-
+      getStatusName(id) {
+          const match = this.statuses.find(s => s.statusId === id);
+          return match ? match.statusName : 'Unknown';
+        },
       async goToProfile() {
         if (!this.sessionId) {
           alert("Session expired. Please log in again.");
@@ -383,14 +427,23 @@ import axios from 'axios';
 
   for (const drive of expiredDrives) {
     try {
-      // Move to history if status is NOT "Pending"
-      if (drive.status !== "Pending") {
+      // Move to history if status is success"
+      if (drive.status === 4) {
         await axios.post(`${this.$store.getters.getUrl}/api/godo/history?session=${this.sessionId}&routeId=${drive.routeId}`);
+        await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteDrive/${drive.routeId}`);
+
+        this.drives = this.drives.filter(drive => new Date(drive.boardingTime) >= now && drive.status === 4);
 
       }
+      else if(drive.status === 1){
+        await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteDrive/${drive.routeId}`);
+        this.drives = this.drives.filter(drive => new Date(drive.boardingTime) >= now && drive.status === 1);
 
-      // Delete from active drives table
-      await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteDrive/${drive.routeId}`);
+
+      }
+      else{
+        return;
+      }
 
     } catch (error) {
       console.error(`Error processing drive (ID: ${drive.routeId}):`, error);
@@ -398,8 +451,6 @@ import axios from 'axios';
     }
   }
 
-  // Remove expired drives from UI after all API calls complete
-  this.drives = this.drives.filter(drive => new Date(drive.boardingTime) >= now);
 },
 
     openConfirmDialog(drive) {
@@ -416,25 +467,25 @@ import axios from 'axios';
         // console.log("drive",this.selectedDrive);
         
 
-        if (this.selectedDrive.status !== "Pending" && boardingDate > now) {
+        if (this.selectedDrive.status !== 1 && boardingDate < now && this.selectedDrive.status !== 4) {
         
-            await axios.post(`${this.$store.getters.getUrl}/api/godo/history?session=${this.sessionId}&routeId=${this.selectedDrive.routeId}`);
 
-
-            // // 2. Send DELETE request to remove from drives table
-            await axios.delete(`${this.$store.getters.getUrl}/api/godo/deleteDrive/${this.selectedDrive.routeId}`);
-
-            this.drives = this.drives.filter(d => d.routeId !== this.selectedDrive.routeId);
-
-            this.driveHistory.push({ ...this.selectedDrive, status: "Completed" });
+            await axios.put(`${this.$store.getters.getUrl}/api/godo/updateStatus/${this.selectedDrive.routeId}`);
+            this.snackbarMessage = 'Status updated successfully';
+               this.snackbarColor = 'green';
+               this.snackbar = true;
 
         }
         else{
-          alert("Boarding time has not passed yet. No action taken.");
+          this.snackbarMessage = 'Boarding Time Not Passed';
+           this.snackbarColor = 'red';
+            this.snackbar = true;
+
         }
 
       // Close dialog
       this.confirmDialog = false;
+
     } catch (error) {
       alert("Error marking drive as completed:", error);
     }

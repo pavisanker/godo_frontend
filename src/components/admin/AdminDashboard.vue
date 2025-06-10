@@ -41,7 +41,7 @@
         <v-card class="info-card drive-card" elevation="10" @click="toAdminDrives">
           <v-card-title class="d-flex align-center">
             <v-icon size="40" class="mr-3" color="#c54a4a">mdi-map-marker-path</v-icon>
-            <span class="card-title">Total Drives</span>
+            <span class="card-title">Ongoing Drives</span>
           </v-card-title>
           <v-divider></v-divider>
           <v-card-text class="text-center">
@@ -54,7 +54,7 @@
         <v-card class="info-card booking-card" elevation="10" @click="toAdminBookings">
           <v-card-title class="d-flex align-center">
             <v-icon size="40" class="mr-3" color="#8b59c8">mdi-calendar-check</v-icon>
-            <span class="card-title">Total Bookings</span>
+            <span class="card-title">Current Bookings</span>
           </v-card-title>
           <v-divider></v-divider>
           <v-card-text class="text-center">

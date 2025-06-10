@@ -15,6 +15,8 @@ import AdminDrives from './components/admin/AdminDrives.vue';
 import AdminBookings from './components/admin/AdminBookings.vue';
 import AdminHistory from './components/admin/AdminHistory.vue';
 import GodoAbout from './components/GodoAbout.vue';
+import CreatePayment from './components/CreatePayment.vue';
+import AdminPayments from './components/admin/AdminPayments.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -36,9 +38,11 @@ const router = createRouter({
                 {path: 'drives', component: AdminDrives},
                 {path: 'bookings', component: AdminBookings},
                 {path: 'history', component: AdminHistory},
+                {path: 'payments', component:AdminPayments},
             ]
         },
         { path: '/about', component: GodoAbout},
+        { path: '/payment',name: 'CreatePayment', component: CreatePayment},
     ],
 });
 

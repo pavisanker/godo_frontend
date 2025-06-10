@@ -59,6 +59,7 @@
                       v-model="startingPoint"
                       @input="startingPoint = startingPoint.toUpperCase()"
                       required
+                      :readonly="travelDistance"
                     ></v-text-field>
                     <!-- <v-autocomplete class="input-group"
                       v-model="startingPoint"
@@ -71,9 +72,8 @@
                       v-model="destination" 
                       @input="destination = destination.toUpperCase()"
                       required
+                      :readonly="travelDistance"
                     ></v-text-field>
-                    <v-btn @click="triggerRoute">Show Route</v-btn>
-
                     
                     <v-field class="input-group">
                         <input type="date" v-model="date">
@@ -93,9 +93,18 @@
                       </template>
                     </v-field>
 
+                    <v-btn
+                      @click="handleRouteButton"
+                      :style="routeButtonStyle"
+                    >
+                      {{ routeButtonLabel }}
+                    </v-btn>
+                      <br>
+
                     
+                    <!-- <v-btn @click="triggerRoute">Show Route</v-btn>
                     
-                    <button class="button" style="color: white; background-color: #324247;" @click="addDrive()">Continue</button>
+                    <button class="button" style="color: white; background-color: #324247;" @click="addDrive()">Continue</button> -->
                 </div>
             </div>
             <!-- <div>
@@ -112,7 +121,10 @@
                     />
                   </GMapMap>
             </div> -->
+<div>
+        <p v-if="travelDistance">Distance: {{ travelDistance }} km</p>
 
+</div>
             <div>
           <MapView 
             ref="mapRef"
@@ -120,6 +132,7 @@
             :zoom="12"
             :startingPoint="startingPoint" 
             :destination="destination"
+            @distance-calculated="handleDistance"
             style="width: 400px; height: 500px;border-radius: 10px;"
             />
           </div>
@@ -136,6 +149,7 @@
           {{ snackbarMessage }}
         </v-snackbar>
         </div>
+
         
     </div>
 
@@ -170,7 +184,20 @@ import MapView from './MapView.vue';
         mapCenter: { lat: 9.6878, lng: 76.3354 },
         snackbar: false,
         snackbarMessage: '',
+        travelDistance: null,
+        routeReady: false,
+
       };
+    },
+    computed: {
+      routeButtonLabel() {
+        return this.routeReady ? 'Add Route' : 'Continue'
+      },
+      routeButtonStyle() {
+        return this.routeReady
+          ? { backgroundColor: '#324247', color: 'white' }     // Add Route
+          : { backgroundColor: 'white', color: '#324247' }     // Continue
+      }
     },
     async mounted() {
       if (!this.sessionId) {
@@ -184,6 +211,31 @@ import MapView from './MapView.vue';
       // }
     },
     methods: {
+      handleRouteButton() {
+    if (!this.sessionId ||
+        !this.selectedVehicleId ||
+        !this.vacancy ||
+        !this.date ||
+        !this.time ||
+        !this.startingPoint ||
+        !this.destination) {
+      this.snackbarMessage = "Please fill in all fields before adding a drive."
+      this.snackbarColor = 'red'
+      this.snackbar = true
+      return
+    }
+
+    if (!this.routeReady) {
+      this.routeReady = true
+      this.$refs.mapRef.showRoute()
+    } else if (this.travelDistance) {
+      this.addDrive()
+    } else {
+      this.snackbarMessage = "Still calculating distance..."
+      this.snackbarColor = 'orange'
+      this.snackbar = true
+    }
+  },
       async fetchVehicles() {
       if (!this.sessionId) {
         alert("Please enter a session ID");
@@ -251,7 +303,8 @@ import MapView from './MapView.vue';
           vacancy: this.vacancy,
           boardingTime: dateTimeString,
           start: this.startingPoint,
-          destination: this.destination
+          destination: this.destination,
+          distance:  Math.round(this.travelDistance * 1000)
           }
           
         }
@@ -326,6 +379,10 @@ import MapView from './MapView.vue';
         console.error("Error fetching place suggestions:", error);
       }
     },
+    handleDistance(km) {
+    console.log('Distance from child:', km + ' km')
+    this.travelDistance = km // Store in data if needed
+  },
     }
   };
   </script>
