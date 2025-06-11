@@ -93,12 +93,25 @@
                       </template>
                     </v-field>
 
-                    <v-btn
-                      @click="handleRouteButton"
-                      :style="routeButtonStyle"
-                    >
-                      {{ routeButtonLabel }}
-                    </v-btn>
+                    <div style="display: flex;flex-direction: row;gap: 5em;">
+                      <div>
+                        <button
+                            @click="cancelDrive"
+                          >
+                            Cancel
+                        </button>
+                      </div>
+                      <div>
+                        <v-btn
+                        @click="handleRouteButton"
+                        :style="routeButtonStyle"
+                      >
+                        {{ routeButtonLabel }}
+                      </v-btn>
+                      </div>
+                      
+                    </div>
+
                       <br>
 
                     
@@ -191,10 +204,10 @@ import MapView from './MapView.vue';
     },
     computed: {
       routeButtonLabel() {
-        return this.routeReady ? 'Add Route' : 'Continue'
+        return this.travelDistance ? 'Add Route' : 'Continue'
       },
       routeButtonStyle() {
-        return this.routeReady
+        return this.travelDistance
           ? { backgroundColor: '#324247', color: 'white' }     // Add Route
           : { backgroundColor: 'white', color: '#324247' }     // Continue
       }
@@ -236,6 +249,14 @@ import MapView from './MapView.vue';
       this.snackbar = true
     }
   },
+    cancelDrive() {
+      this.startingPoint = ''
+      this.destination = ''
+      this.selectedVehicleId = ''
+      this.routeReady = false
+      this.travelDistance = null
+      this.vacancy = 1
+    },
       async fetchVehicles() {
       if (!this.sessionId) {
         alert("Please enter a session ID");
@@ -365,7 +386,7 @@ import MapView from './MapView.vue';
         return;
       }
 
-      const apiKey = "AIzaSyAmUrMggmOI2LemyeYrc-uHm5hMnRBKz98"; // Replace with your API Key
+      const apiKey = "key"; // Replace with your API Key
       const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${query}&types=geocode&key=${apiKey}`;
 
       try {

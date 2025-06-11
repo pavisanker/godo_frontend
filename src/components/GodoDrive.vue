@@ -81,7 +81,7 @@
                 <v-icon>mdi-check</v-icon>
               </v-btn>
               <v-chip
-                :color="getStatusName(drive.paymentStatus) === 'Success' ? 'success' : 'primary'"
+                :color="getStatusName(drive.paymentStatus) === 'Success' ? 'success' : 'default'"
                 class="ma-2"
                 label
                 small

@@ -64,11 +64,14 @@
                     <v-btn icon variant="text" color="primary" @click="viewDetails(ride.routeId)">
                     <v-icon size="20">mdi-eye</v-icon>
                   </v-btn>
-                    <v-btn variant="text" color="blue" @click="openEditDialog(ride)">
+                    <v-btn 
+                    :disabled="ride.status === 3"
+                    variant="text" color="blue" @click="openEditDialog(ride)">
                       <v-icon>mdi-pencil</v-icon>
                     </v-btn>
                     <v-btn
                       v-if="ride.paymentStatus !== 4" 
+                      :disabled="ride.status !== 3 "
                       color="green"
                       @click="goToPayment(ride)"
                     >
