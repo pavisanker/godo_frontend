@@ -71,15 +71,22 @@
             </td>
             
             <td>
-              <v-btn icon variant="text" color="primary" @click="viewBookings(drive.routeId)">
+              <v-btn 
+              title="View"
+              icon variant="text" color="primary" @click="viewBookings(drive.routeId)">
                     <v-icon size="20">mdi-eye</v-icon>
                   </v-btn>
-              <v-btn icon variant="text" color="blue" @click="openEditDialog(drive)">
+              <v-btn 
+              title="Edit"
+              icon variant="text" color="blue" @click="openEditDialog(drive)">
                 <v-icon size="20">mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon variant="text" color="green" @click="openConfirmDialog(drive)">
+              <v-btn 
+              title="Start"
+              icon variant="text" color="green" @click="openConfirmDialog(drive)">
                 <v-icon>mdi-check</v-icon>
               </v-btn>
+              
               <v-chip
                 :color="getStatusName(drive.paymentStatus) === 'Success' ? 'success' : 'default'"
                 class="ma-2"
