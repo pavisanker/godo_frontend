@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>History Management</h2>
+      <h2>GoDo History</h2>
 
       <v-container>
       <v-card class="pa-4">
@@ -36,7 +36,13 @@
                 <v-icon left small>mdi-currency-inr</v-icon>
               {{ history.amount/100 }}</td>
             <td>{{ history.paymentId }}</td>
-            <td>{{ history.status }}</td>
+            <td>
+            <v-chip :color="history.status === 4 ? 'green' : history.status === 3 ? 'red' : history.status === 2 ? 'blue' : history.status === 1 ? 'grey' : 'black'" dark>
+              {{ history.status === 4 ? 'Success' : history.status === 3 ? 'Failed' : history.status === 2 ? 'Processing' : history.status === 1 ? 'Pending' : 'Unknown' }}
+            </v-chip>
+            </td>
+            
+
           </tr>
           </tbody>
         </v-table>

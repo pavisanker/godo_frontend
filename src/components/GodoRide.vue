@@ -65,7 +65,6 @@
                     <v-icon size="20">mdi-eye</v-icon>
                   </v-btn>
                     <v-btn 
-                    :disabled="ride.status === 3"
                     variant="text" color="blue" @click="openEditDialog(ride)">
                       <v-icon>mdi-pencil</v-icon>
                     </v-btn>
@@ -98,11 +97,12 @@
           <v-dialog v-model="editDialog" max-width="500px">
             <v-card>
               <v-card-title class="d-flex justify-center align-center">
-                Confirm Delete
+                Confirm Delete - {{ editedRide.bookingId }} <br><br>
+                 Route ID - {{ editedRide.routeId }} <br>
+
               </v-card-title>
               <v-divider></v-divider>
               <v-card-text>
-                
               Are you sure you want to cancel this booking?<br>
               From 
               <b>{{ editedRide?.start }}</b> to <b>{{ editedRide?.destination }}</b>
@@ -112,7 +112,7 @@
                   <!-- <v-btn color="blue" @click="saveChanges(editedRide.bookingId)">Save</v-btn> -->
                   <v-btn @click="editDialog = false">Cancel</v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn color="red" :disabled="editedRide.paymentStatus !== 1" @click="deleteRide(editedRide.bookingId)">Delete</v-btn>
+                  <v-btn color="red" :disabled="editedRide.status === 3" @click="deleteRide(editedRide.bookingId)">Delete</v-btn>
 
                 </v-card-actions>
             </v-card>

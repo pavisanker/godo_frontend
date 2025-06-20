@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>Drives Management</h2>
+      <h2>GoDo Drives</h2>
 
       <v-container>
       <v-card class="pa-4">

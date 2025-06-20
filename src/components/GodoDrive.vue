@@ -100,7 +100,7 @@
     <v-dialog v-model="editDialog" max-width="500px">
       <v-card>
         <v-card-title class="d-flex justify-center align-center">
-          Edit Drive
+          Edit Drive - {{ editedDrive.routeId }}
         </v-card-title>
         <v-divider></v-divider>
         <v-card-text>
@@ -474,6 +474,8 @@ import axios from 'axios';
             this.snackbarMessage = 'Status updated successfully';
                this.snackbarColor = 'green';
                this.snackbar = true;
+               window.location.reload();
+
 
         }
         else{

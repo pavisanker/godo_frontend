@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>Bookings Management</h2>
+      <h2>GoDo Bookings</h2>
 
       <v-container>
       <v-card class="pa-4">

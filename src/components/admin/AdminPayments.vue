@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>Payment Management</h2>
+      <h2>GoDo Payments</h2>
 
       <v-container>
       <v-card class="pa-4">

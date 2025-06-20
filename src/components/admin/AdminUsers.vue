@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>Users Management</h2>
+      <h2>GoDo Users</h2>
 
       <v-container>
       <v-card class="pa-4">

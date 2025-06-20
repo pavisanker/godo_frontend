@@ -16,7 +16,7 @@
               <th>RC Book</th>
               <th>Phone</th>
               <th>Owner Id</th>
-              <th>Total Drives</th>
+              <th>Chassis No.</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -40,7 +40,7 @@
               </td>
               <td>{{ vehicle.phoneNumber }}</td>
               <td>{{ vehicle.userId }}</td>
-              <td>{{ vehicle.totalDrives }}</td>
+              <td>{{ vehicle.chassisNumber }}</td>
               <td>
                 <v-chip :color="getStatusColor(vehicle.status)" dark>
                   {{ vehicle.status }}

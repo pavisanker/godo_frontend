@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import L from 'leaflet'
 import 'leaflet-routing-machine'
 import 'leaflet/dist/leaflet.css'
@@ -19,7 +20,20 @@ export default {
     return {
       map: null,
       routeControl: null,
-      distanceLabel: null
+      distanceLabel: null,
+      startLat: '',
+      startLng: '',
+      endLat: '',
+      endLng: '',
+      startAndEnd: [],
+      counter:0,
+      places: [],
+      loading: false,
+      selectedWayPoints: [],
+      straightDistance: ''
+
+
+
     }
   },
   async mounted() {
@@ -45,10 +59,45 @@ export default {
         if (!res.ok) throw new Error(`API error: ${res.status}`)
         const data = await res.json()
         if (!data.length) throw new Error(`No results for ${place}`)
+        
+        if(this.counter<4){
+          this.startAndEnd[this.counter] = parseFloat(data[0].lat)
+        console.log(this.startAndEnd[this.counter]);
+          this.counter++;
+          this.startAndEnd[this.counter] = parseFloat(data[0].lon)
+        console.log(this.startAndEnd[this.counter]);
+          this.counter++;
+        }
+        else{
+          console.log('counter error');
+        }
+        
         return [parseFloat(data[0].lat), parseFloat(data[0].lon)]
       } catch (err) {
         console.error('Geocode error:', err.message)
         return null
+      }
+    },
+    async fetchRoutePlaces() {
+      this.loading = true;
+
+      try {
+        const res = await axios.get(`${this.$store.getters.getUrl}/api/godo/route-places`, {
+          params: {
+            startLat: this.startAndEnd[0],
+            startLng: this.startAndEnd[1],
+            endLat: this.startAndEnd[2],
+            endLng: this.startAndEnd[3]
+          }
+        });
+        this.places = res.data;        
+        this.selectedWaypoints = [...res.data]; // select all by default
+          this.$emit('wayPoints', this.places)
+
+      } catch (err) {
+        console.log('Failed to fetch route places.');
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -60,9 +109,15 @@ export default {
         alert('Invalid location(s) or Check Internet Connection')
         return
       }
-      const straightDistance = this.haversineDistance(from, to)
-      this.$emit('distance-calculated', straightDistance)
-      console.log('Straight-line distance:', straightDistance + ' km')
+      this.counter = 0;
+      this.fetchRoutePlaces();
+        console.log(this.places);
+       
+          this.straightDistance = this.haversineDistance(from, to)       
+        
+          this.$emit('distance-calculated', this.straightDistance)
+      
+      // console.log('Straight-line distance:', straightDistance + ' km')
 
 
 
@@ -77,26 +132,26 @@ export default {
         show: false
       }).addTo(this.map)
 
-      this.routeControl.on('routesfound', (e) => {
-        const route = e.routes[0]
-        const distanceKm = (route.summary.totalDistance / 1000).toFixed(2)
+      // this.routeControl.on('routesfound', (e) => {
+        // const route = e.routes[0]
+        // const distanceKm = (route.summary.totalDistance / 1000).toFixed(2)
 
-        const midLat = (from[0] + to[0]) / 2
-        const midLon = (from[1] + to[1]) / 2
+        // const midLat = (from[0] + to[0]) / 2
+        // const midLon = (from[1] + to[1]) / 2
 
-        if (this.distanceLabel) {
-          this.map.removeLayer(this.distanceLabel)
-        }
+        // if (this.distanceLabel) {
+        //   this.map.removeLayer(this.distanceLabel)
+        // }
 
-        this.distanceLabel = L.marker([midLat, midLon], {
-          icon: L.divIcon({
-            className: 'distance-label',
-            html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #999; font-size: 14px;">
-              Distance: ${distanceKm},${straightDistance} km
-            </div>`
-          })
-        }).addTo(this.map)
-      })
+        // this.distanceLabel = L.marker([midLat, midLon], {
+        //   icon: L.divIcon({
+        //     className: 'distance-label',
+        //     html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #999; font-size: 14px;">
+        //       Distance: ${distanceKm},${this.straightDistance} km
+        //     </div>`
+        //   })
+        // }).addTo(this.map)
+      // })
 
       this.map.fitBounds(L.latLngBounds([
         L.latLng(...from),

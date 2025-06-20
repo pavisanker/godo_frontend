@@ -53,9 +53,9 @@
                   <td>{{ delivery.destination }}</td>
                   <td>{{ formatDate(delivery.boardingTime) }}</td>
                   <td>{{ delivery.weight }}</td>
-                  <td>
-                    <v-chip :color="delivery.status === 'Booked' ? 'green' : 'blue'" dark>
-                      {{ delivery.status }}
+                  <td> 
+                    <v-chip :color="delivery.status === 7 ? 'green' : delivery.status === 3 ? 'Blue' : delivery.status === 2 ? 'red' : delivery.status === 1 ? 'grey' : 'black'" dark>
+                      {{ delivery.status === 7 ? 'Booked' : delivery.status === 3 ? 'Completed' : delivery.status === 2 ? 'Processing' : delivery.status === 1 ? 'Pending' : 'Unknown' }}
                     </v-chip>
                   </td>
                   <td>

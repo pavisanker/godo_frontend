@@ -95,8 +95,8 @@ import axios from 'axios';
         const vehicleResponse = await axios.get(`${this.$store.getters.getUrl}/api/admin/getVehicleCount`);
         this.vehicleCount = vehicleResponse.data.count;
 
-        // const bookingResponse = await axios.get(`${this.$store.getters.getUrl}/api/admin/getBookingCount`);
-        // this.bookingCount = bookingResponse.data.count;
+        const bookingResponse = await axios.get(`${this.$store.getters.getUrl}/api/admin/getBookingCount`);
+        this.bookingCount = bookingResponse.data.count;
 
         const driveResponse = await axios.get(`${this.$store.getters.getUrl}/api/admin/getDriveCount`);
         this.driveCount = driveResponse.data.count;
@@ -134,13 +134,13 @@ import axios from 'axios';
 }
 
 .vehicle-card {
-  background: linear-gradient(135deg, #324247, #81c784);
+  background: linear-gradient(225deg, #324247, #81c784);
 }
 .drive-card {
-  background: linear-gradient(135deg, #324247, #c54a4a);
+  background: linear-gradient(45deg, #324247, #c54a4a);
 }
 .booking-card {
-  background: linear-gradient(135deg, #324247, #8b59c8);
+  background: linear-gradient(315deg, #324247, #8b59c8);
 }
 
 .card-title {

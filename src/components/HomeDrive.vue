@@ -134,10 +134,28 @@
                     />
                   </GMapMap>
             </div> -->
-<div>
-        <p v-if="travelDistance">Distance: {{ travelDistance }} km</p>
+            <div style="padding: 12px;">
+              <p v-if="travelDistance" style="font-weight: bold; margin-bottom: 12px;">
+                Distance: {{ travelDistance }} km
+              </p>
 
-</div>
+              <!-- Loading Spinner -->
+              <div v-if="loading" style="margin: 20px 0;">
+                <span class="loader"></span> Loading route...
+              </div>
+
+              <!-- Waypoints Display -->
+              <div v-else-if="receivedWaypoints.length">
+                <p style="font-weight: bold; margin-bottom: 8px;">Places on Route:</p>
+                <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
+                  <li v-for="(point, index) in receivedWaypoints" :key="index" style="margin-bottom: 4px;">
+                    {{ point }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+
             <div>
           <MapView 
             ref="mapRef"
@@ -146,6 +164,7 @@
             :startingPoint="startingPoint" 
             :destination="destination"
             @distance-calculated="handleDistance"
+            @wayPoints="handleWaypoints"
             style="width: 400px; height: 500px;border-radius: 10px;"
             />
           </div>
@@ -199,6 +218,9 @@ import MapView from './MapView.vue';
         snackbarMessage: '',
         travelDistance: null,
         routeReady: false,
+        receivedWaypoints: [],
+        loading: false
+
 
       };
     },
@@ -240,6 +262,7 @@ import MapView from './MapView.vue';
 
     if (!this.routeReady) {
       this.routeReady = true
+      this.loading = true
       this.$refs.mapRef.showRoute()
     } else if (this.travelDistance) {
       this.addDrive()
@@ -404,6 +427,12 @@ import MapView from './MapView.vue';
     console.log('Distance from child:', km + ' km')
     this.travelDistance = km // Store in data if needed
   },
+  handleWaypoints(points) {
+    this.receivedWaypoints = points;
+    this.loading = false;
+
+    console.log('Received waypoints from child:', this.receivedWaypoints);
+  }
     }
   };
   </script>
@@ -469,6 +498,23 @@ input {
   /* padding: 8px; */
   margin: 5px;
 }
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 @media (max-width: 600px) {
   .l2 {
     flex-direction: column;
